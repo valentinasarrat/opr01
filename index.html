@@ -3,32 +3,366 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Primer ejemplo</title>
+    <title>Matrimonios vs AUC por Región 2022</title>
     <style>
-        .parent { display: grid; grid-template-columns: repeat(3, 1fr); }
-		circle {fill:pink}
-		circle.tipo0{fill:red}
-		circle.tipo1{fill:green}
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            padding: 40px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 8px;
+            font-size: 22px;
+        }
+
+        h2.subtitulo {
+            text-align: center;
+            font-size: 14px;
+            font-weight: normal;
+            color: #555;
+            margin-bottom: 6px;
+        }
+
+        p.fuente {
+            text-align: center;
+            color: #888;
+            font-size: 13px;
+            margin-bottom: 40px;
+        }
+
+        .leyenda-global {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            margin-bottom: 32px;
+            font-size: 14px;
+            color: #444;
+        }
+
+        .leyenda-global span {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .punto {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            flex-shrink: 0;
+        }
+
+        .contenedor {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 28px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .grafico {
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            text-align: center;
+        }
+
+        .grafico h3 {
+            font-size: 11px;
+            font-weight: normal;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 4px;
+        }
+
+        .grafico h2 {
+            font-size: 17px;
+            margin-bottom: 4px;
+            color: #1a1a1a;
+        }
+
+        .grafico .total {
+            font-size: 12px;
+            color: #aaa;
+            margin-bottom: 16px;
+        }
+
+        svg.donut {
+            width: 150px;
+            height: 150px;
+        }
+
+        .stats {
+            margin-top: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            text-align: left;
+        }
+
+        .stat-fila {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: #444;
+        }
+
+        .stat-fila .etiqueta {
+            flex: 1;
+        }
+
+        .stat-fila .porcentaje {
+            font-weight: bold;
+            color: #1a1a1a;
+            min-width: 38px;
+            text-align: right;
+        }
+
+        .barra-track {
+            width: 100%;
+            height: 4px;
+            background: #eee;
+            border-radius: 99px;
+            margin-top: 3px;
+        }
+
+        .barra-fill {
+            height: 100%;
+            border-radius: 99px;
+        }
+
+        hr.divisor {
+            border: none;
+            border-top: 1px solid #f0f0f0;
+            margin: 4px 0;
+        }
     </style>
 </head>
 <body>
-	<h1>holi</h1>
-    <div class="parent">
-        <div><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><g id="primera"></g></svg></div>
-        <div><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><g id="segunda"></g></svg></div>
-		<div><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><g id="tercera"></g></svg></div>
-	</div>
-	<div class="parent"
-	<svg width="100%" height="100%" viewBox="0 0 42 42" class="donut">
-  <circle class="donut-hole" cx="21" cy="21" r="15.91549430918954" fill="#fff"></circle>
-  <circle class="donut-ring" cx="21" cy="21" r="15.91549430918954" fill="transparent" stroke="#d2d3d4" stroke-width="3"></circle>
-  <circle class="donut-segment" cx="21" cy="21" r="15.91549430918954" fill="transparent" stroke="#ce4b99" stroke-width="3" stroke-dasharray="85 15" stroke-dashoffset="0"></circle>
-</svg>
-    <script>
-        const data = [20, 50, 10];
-        ["primera", "segunda", "tercera"].forEach((id, i) => {
-            document.querySelector(`#${id}`).innerHTML = `<circle cx="50" cy="50" r="${data[i]}" class="tipo${i}"/>`;
-        });
-    </script>
+
+    <h1>Matrimonios vs Acuerdos de Unión Civil por región</h1>
+    <h2 class="subtitulo">Distribución del total de uniones formales registradas, 2022</h2>
+    <p class="fuente">Fuente: INE Chile — Anuario de Estadísticas Vitales 2022, Tabla 8</p>
+
+    <div class="leyenda-global">
+        <span><i class="punto" style="background:#e07b39"></i> Matrimonios</span>
+        <span><i class="punto" style="background:#4a86a8"></i> Acuerdos de Unión Civil (AUC)</span>
+    </div>
+
+    <div class="contenedor">
+
+        <!--
+            DATOS EXACTOS DE LA TABLA 8 (leídos de la imagen):
+            Cálculo: % matrimonios de esa región = matrim / (matrim + AUC) × 100
+
+            Metropolitana : 30.828 + 4.518 = 35.346 → 87,2% matrim / 12,8% AUC
+            Magallanes    :    570 +   174 =    744 → 76,6% matrim / 23,4% AUC  ← mayor % AUC
+            Ñuble         :  1.638 +   117 =  1.755 → 93,3% matrim /  6,7% AUC  ← menor % AUC
+            Tarapacá      :  1.271 +   238 =  1.509 → 84,2% matrim / 15,8% AUC
+        -->
+
+        <!-- Gráfico 1: Metropolitana -->
+        <div class="grafico">
+            <h3>Región N° 13</h3>
+            <h2>Metropolitana</h2>
+            <p class="total">35.346 uniones · 30.828 matrim. + 4.518 AUC</p>
+
+            <svg viewBox="0 0 42 42" class="donut" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="21" cy="21" r="15.91549430918954" fill="#fff"></circle>
+                <circle cx="21" cy="21" r="15.91549430918954"
+                    fill="transparent" stroke="#eee" stroke-width="3"></circle>
+                <!-- matrimonios: 87.2% -->
+                <circle cx="21" cy="21" r="15.91549430918954"
+                    fill="transparent"
+                    stroke="#e07b39"
+                    stroke-width="3"
+                    stroke-dasharray="87.2 12.8"
+                    stroke-dashoffset="25">
+                </circle>
+                <!-- AUC: 12.8% -->
+                <circle cx="21" cy="21" r="15.91549430918954"
+                    fill="transparent"
+                    stroke="#4a86a8"
+                    stroke-width="3"
+                    stroke-dasharray="12.8 87.2"
+                    stroke-dashoffset="137.2">
+                </circle>
+            </svg>
+
+            <div class="stats">
+                <div class="stat-fila">
+                    <i class="punto" style="background:#e07b39"></i>
+                    <span class="etiqueta">Matrimonios (30.828)</span>
+                    <span class="porcentaje">87,2%</span>
+                </div>
+                <div class="barra-track">
+                    <div class="barra-fill" style="width:87.2%; background:#e07b39"></div>
+                </div>
+                <hr class="divisor">
+                <div class="stat-fila">
+                    <i class="punto" style="background:#4a86a8"></i>
+                    <span class="etiqueta">AUC (4.518)</span>
+                    <span class="porcentaje">12,8%</span>
+                </div>
+                <div class="barra-track">
+                    <div class="barra-fill" style="width:12.8%; background:#4a86a8"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gráfico 2: Magallanes (mayor % AUC del país) -->
+        <div class="grafico">
+            <h3>Región N° 12 · Mayor % AUC</h3>
+            <h2>Magallanes</h2>
+            <p class="total">744 uniones · 570 matrim. + 174 AUC</p>
+
+            <svg viewBox="0 0 42 42" class="donut" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="21" cy="21" r="15.91549430918954" fill="#fff"></circle>
+                <circle cx="21" cy="21" r="15.91549430918954"
+                    fill="transparent" stroke="#eee" stroke-width="3"></circle>
+                <!-- matrimonios: 76.6% -->
+                <circle cx="21" cy="21" r="15.91549430918954"
+                    fill="transparent"
+                    stroke="#e07b39"
+                    stroke-width="3"
+                    stroke-dasharray="76.6 23.4"
+                    stroke-dashoffset="25">
+                </circle>
+                <!-- AUC: 23.4% -->
+                <circle cx="21" cy="21" r="15.91549430918954"
+                    fill="transparent"
+                    stroke="#4a86a8"
+                    stroke-width="3"
+                    stroke-dasharray="23.4 76.6"
+                    stroke-dashoffset="148.6">
+                </circle>
+            </svg>
+
+            <div class="stats">
+                <div class="stat-fila">
+                    <i class="punto" style="background:#e07b39"></i>
+                    <span class="etiqueta">Matrimonios (570)</span>
+                    <span class="porcentaje">76,6%</span>
+                </div>
+                <div class="barra-track">
+                    <div class="barra-fill" style="width:76.6%; background:#e07b39"></div>
+                </div>
+                <hr class="divisor">
+                <div class="stat-fila">
+                    <i class="punto" style="background:#4a86a8"></i>
+                    <span class="etiqueta">AUC (174)</span>
+                    <span class="porcentaje">23,4%</span>
+                </div>
+                <div class="barra-track">
+                    <div class="barra-fill" style="width:23.4%; background:#4a86a8"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gráfico 3: Ñuble (menor % AUC del país) -->
+        <div class="grafico">
+            <h3>Región N° 16 · Menor % AUC</h3>
+            <h2>Ñuble</h2>
+            <p class="total">1.755 uniones · 1.638 matrim. + 117 AUC</p>
+
+            <svg viewBox="0 0 42 42" class="donut" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="21" cy="21" r="15.91549430918954" fill="#fff"></circle>
+                <circle cx="21" cy="21" r="15.91549430918954"
+                    fill="transparent" stroke="#eee" stroke-width="3"></circle>
+                <!-- matrimonios: 93.3% -->
+                <circle cx="21" cy="21" r="15.91549430918954"
+                    fill="transparent"
+                    stroke="#e07b39"
+                    stroke-width="3"
+                    stroke-dasharray="93.3 6.7"
+                    stroke-dashoffset="25">
+                </circle>
+                <!-- AUC: 6.7% -->
+                <circle cx="21" cy="21" r="15.91549430918954"
+                    fill="transparent"
+                    stroke="#4a86a8"
+                    stroke-width="3"
+                    stroke-dasharray="6.7 93.3"
+                    stroke-dashoffset="143.3">
+                </circle>
+            </svg>
+
+            <div class="stats">
+                <div class="stat-fila">
+                    <i class="punto" style="background:#e07b39"></i>
+                    <span class="etiqueta">Matrimonios (1.638)</span>
+                    <span class="porcentaje">93,3%</span>
+                </div>
+                <div class="barra-track">
+                    <div class="barra-fill" style="width:93.3%; background:#e07b39"></div>
+                </div>
+                <hr class="divisor">
+                <div class="stat-fila">
+                    <i class="punto" style="background:#4a86a8"></i>
+                    <span class="etiqueta">AUC (117)</span>
+                    <span class="porcentaje">6,7%</span>
+                </div>
+                <div class="barra-track">
+                    <div class="barra-fill" style="width:6.7%; background:#4a86a8"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gráfico 4: Tarapacá -->
+        <div class="grafico">
+            <h3>Región N° 1</h3>
+            <h2>Tarapacá</h2>
+            <p class="total">1.509 uniones · 1.271 matrim. + 238 AUC</p>
+
+            <svg viewBox="0 0 42 42" class="donut" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="21" cy="21" r="15.91549430918954" fill="#fff"></circle>
+                <circle cx="21" cy="21" r="15.91549430918954"
+                    fill="transparent" stroke="#eee" stroke-width="3"></circle>
+                <!-- matrimonios: 84.2% -->
+                <circle cx="21" cy="21" r="15.91549430918954"
+                    fill="transparent"
+                    stroke="#e07b39"
+                    stroke-width="3"
+                    stroke-dasharray="84.2 15.8"
+                    stroke-dashoffset="25">
+                </circle>
+                <!-- AUC: 15.8% -->
+                <circle cx="21" cy="21" r="15.91549430918954"
+                    fill="transparent"
+                    stroke="#4a86a8"
+                    stroke-width="3"
+                    stroke-dasharray="15.8 84.2"
+                    stroke-dashoffset="140.2">
+                </circle>
+            </svg>
+
+            <div class="stats">
+                <div class="stat-fila">
+                    <i class="punto" style="background:#e07b39"></i>
+                    <span class="etiqueta">Matrimonios (1.271)</span>
+                    <span class="porcentaje">84,2%</span>
+                </div>
+                <div class="barra-track">
+                    <div class="barra-fill" style="width:84.2%; background:#e07b39"></div>
+                </div>
+                <hr class="divisor">
+                <div class="stat-fila">
+                    <i class="punto" style="background:#4a86a8"></i>
+                    <span class="etiqueta">AUC (238)</span>
+                    <span class="porcentaje">15,8%</span>
+                </div>
+                <div class="barra-track">
+                    <div class="barra-fill" style="width:15.8%; background:#4a86a8"></div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
 </body>
 </html>
